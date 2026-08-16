@@ -12,6 +12,7 @@ public class VenueMapper {
     public Venue mapToEntity(VenueRequestDto venueRequestDto) {
         // Mapping logic from VenueRequestDto to Venue entity
         Venue v = new Venue();
+        
         v.setName(venueRequestDto.getName());
         v.setCity(venueRequestDto.getCity());
         v.setAddress(venueRequestDto.getAddress());
@@ -22,6 +23,7 @@ public class VenueMapper {
     public VenueResponseDto mapToResponseDto(Venue venue) {
         // Mapping logic from Venue entity to VenueResponseDto
         VenueResponseDto dto = new VenueResponseDto();
+        dto.setId(venue.getId());
         dto.setName(venue.getName());
         dto.setCity(venue.getCity());
         dto.setAddress(venue.getAddress());
