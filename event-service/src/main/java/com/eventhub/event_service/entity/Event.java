@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
@@ -23,6 +25,7 @@ public class Event {
     private String category;
     @NotNull
     private LocalDateTime eventDateTime;
+    @Enumerated(EnumType.STRING)
     private EventStatus status;
 
     @ManyToOne
