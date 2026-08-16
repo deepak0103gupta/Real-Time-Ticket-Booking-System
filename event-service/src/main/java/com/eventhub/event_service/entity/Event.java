@@ -25,6 +25,7 @@ public class Event {
     private String category;
     @NotNull
     private LocalDateTime eventDateTime;
+
     @Enumerated(EnumType.STRING)
     private EventStatus status;
 

@@ -47,20 +47,38 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventResponseDto> getAllEvents() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllEvents'");
+        try{
+            List<Event> events = eventRepository.findAll();
+            return events.stream()
+                    .map(eventMapper::mapToResponseDto)
+                    .toList();
+        }catch(Exception e){
+            throw new RuntimeException("Error fetching events: " + e.getMessage());
+        }
     }
 
     @Override
     public EventResponseDto getEventById(Long eventId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getEventById'");
+        try{
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+            return eventMapper.mapToResponseDto(event);
+        }catch(Exception e){
+            throw new RuntimeException("Error fetching event: " + e.getMessage());
+        }
     }
 
     @Override
     public EventResponseDto cancelEvent(Long eventId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'cancelEvent'");
+        try{
+            Event event = eventRepository.findById(eventId)
+                    .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
+            event.setStatus(EventStatus.CANCELLED);
+            eventRepository.save(event);
+            return eventMapper.mapToResponseDto(event);
+        }catch(Exception e){
+            throw new RuntimeException("Error cancelling event: " + e.getMessage());
+        }
     }
     
 }
