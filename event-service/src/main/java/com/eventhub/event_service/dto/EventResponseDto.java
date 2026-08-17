@@ -17,6 +17,8 @@ public class EventResponseDto {
     private EventStatus status; 
     private LocalDateTime createdAt; 
     private Venue venue;  
+    private int totalSeats;
+    private long availableSeats;
 }
 
 

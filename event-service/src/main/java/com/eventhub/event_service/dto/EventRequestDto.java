@@ -13,4 +13,5 @@ public class EventRequestDto {
     private String category;
     private LocalDateTime eventDateTime;
     private Long venueId;  
+    private SeatLayoutRequest seatLayout;
 }

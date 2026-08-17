@@ -29,10 +29,15 @@ public class EventController {
         this.eventService = eventService;
     }
 
+    @PostMapping()
+    public ResponseEntity<EventResponseDto> createEvent(@RequestBody EventRequestDto eventRequestDto) {
+        EventResponseDto eventResponseDto = eventService.createEvent(eventRequestDto);
+        return ResponseEntity.ok(eventResponseDto);
+    }
 
     
     @GetMapping()
-    public ResponseEntity<List<EventResponseDto>> getMethodName() {
+    public ResponseEntity<List<EventResponseDto>> getAllEvents() {
         List<EventResponseDto> events = eventService.getAllEvents();
         return ResponseEntity.ok(events);
     }
@@ -44,7 +49,7 @@ public class EventController {
     }
 
     @PutMapping("/{eventId}")
-    public ResponseEntity<EventResponseDto> putMethodName(@PathVariable Long eventId) {
+    public ResponseEntity<EventResponseDto> cancelEvent(@PathVariable Long eventId) {
         EventResponseDto eventResponseDto = eventService.cancelEvent(eventId);
         return ResponseEntity.ok(eventResponseDto);
     }
