@@ -13,7 +13,7 @@ import com.eventhub.event_service.entity.Event;
 import com.eventhub.event_service.entity.Seat;
 import com.eventhub.event_service.entity.SeatStatus;
 import com.eventhub.event_service.entity.SeatType;
-import com.eventhub.event_service.serviceImpl.VenueServiceImpl;
+
 
 @Component
 public class EventMapper {

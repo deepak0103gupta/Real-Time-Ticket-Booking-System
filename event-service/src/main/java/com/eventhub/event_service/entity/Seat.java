@@ -7,7 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.UniqueConstraint;
+
 import lombok.Data;
 
 @Entity
@@ -26,5 +26,7 @@ public class Seat {
     private SeatType seatType;
     
     private float price;
+    
+    @Enumerated(EnumType.STRING)
     private SeatStatus seatStatus;
 }

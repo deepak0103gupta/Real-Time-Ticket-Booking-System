@@ -13,24 +13,29 @@ import com.eventhub.event_service.entity.Seat;
 import com.eventhub.event_service.entity.SeatStatus;
 import com.eventhub.event_service.mapper.EventMapper;
 import com.eventhub.event_service.repository.EventRepository;
+import com.eventhub.event_service.repository.SeatRepository;
 import com.eventhub.event_service.repository.VenueRepository;
 import com.eventhub.event_service.service.EventService;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final VenueRepository venueRepository;
+    private final SeatRepository seatRepository;
     private final EventMapper eventMapper;
 
-    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, VenueRepository venueRepository) {
+    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper, VenueRepository venueRepository, SeatRepository seatRepository) {
         this.eventRepository = eventRepository;
         this.venueRepository = venueRepository;
         this.eventMapper = eventMapper;
-
+        this.seatRepository = seatRepository;
     }
 
     @Override
+    @Transactional
     public EventResponseDto createEvent(EventRequestDto eventRequestDto) {
         try {
             Event event = new Event();
@@ -40,11 +45,12 @@ public class EventServiceImpl implements EventService {
             event.setVenue(venueRepository.findById(eventRequestDto.getVenueId()).orElseThrow(
                     () -> new RuntimeException("Venue not found with id: " + eventRequestDto.getVenueId())));
 
-            Event savedEvent = eventRepository.save(event);
-
-            List<Seat> seats = eventMapper.maptoSeatEntity(savedEvent, eventRequestDto.getSeatLayout().getSeats());
-            int totalSeats = seats.size();
-            long availableSeats = seats.size();
+                    
+                    Event savedEvent = eventRepository.save(event);
+                    List<Seat> seats = eventMapper.maptoSeatEntity(savedEvent, eventRequestDto.getSeatLayout().getSeats());
+                    seatRepository.saveAll(seats);
+                    int totalSeats = seats.size();
+                    long availableSeats = seats.size();
             return eventMapper.mapToResponseDto(event, totalSeats, availableSeats);
         } catch (Exception e) {
             throw new RuntimeException("Error creating event: " + e.getMessage());
