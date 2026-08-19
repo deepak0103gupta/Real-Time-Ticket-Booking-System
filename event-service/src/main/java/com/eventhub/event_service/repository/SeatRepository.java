@@ -8,5 +8,5 @@ import com.eventhub.event_service.entity.Seat;
 
 public interface SeatRepository extends JpaRepository<Seat, Long>{
     List<Seat> findByEventId(Long eventId);
-    
+    Seat findByIdAndEventId(Long seatId, Long eventId);
 }

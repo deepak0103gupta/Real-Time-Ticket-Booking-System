@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.eventhub.event_service.dto.SeatResponse;
 import com.eventhub.event_service.entity.Seat;
+import com.eventhub.event_service.entity.SeatStatus;
+import com.eventhub.event_service.exception.InvalidSeatOperationException;
 import com.eventhub.event_service.mapper.SeatMapper;
 import com.eventhub.event_service.repository.SeatRepository;
 import com.eventhub.event_service.service.SeatService;
@@ -28,6 +30,29 @@ public class SeatServiceImpl implements SeatService {
                 .stream()
                 .map(seat -> seatMapper.toSeatResponse(seat))
                 .collect(Collectors.toList());
+    }
+    @Override
+    public SeatResponse markSeatAsBooked(Long eventId, Long seatId) {
+        Seat seat = seatRepository.findByIdAndEventId(seatId, eventId);
+        if(seat.getSeatStatus() == SeatStatus.BOOKED){
+            throw new InvalidSeatOperationException("Seat is already booked");
+        }
+
+        seat.setSeatStatus(SeatStatus.BOOKED);
+        seatRepository.save(seat);
+        return seatMapper.toSeatResponse(seat);
+    }
+    @Override
+    public SeatResponse releaseSeat(Long eventId, Long seatId) {
+        Seat seat = seatRepository.findByIdAndEventId(seatId, eventId);
+        if(seat.getSeatStatus() == SeatStatus.AVAILABLE){
+            throw new InvalidSeatOperationException("Seat is already available");
+        }
+
+        seat.setSeatStatus(SeatStatus.AVAILABLE);
+        seatRepository.save(seat);
+        return seatMapper.toSeatResponse(seat);
+    
     }
 
 

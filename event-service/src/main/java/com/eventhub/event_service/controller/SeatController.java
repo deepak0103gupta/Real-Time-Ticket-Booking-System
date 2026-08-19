@@ -11,6 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 
@@ -25,6 +28,16 @@ public class SeatController {
     @GetMapping()
     public ResponseEntity<List<SeatResponse>> getAllSeats(@PathVariable Long eventId) {
         return ResponseEntity.ok(seatService.getSeatsByEventId(eventId));
+    }
+
+    @PutMapping("/{seatId}/book")
+    public ResponseEntity<SeatResponse> bookSeats(@PathVariable Long eventId, @PathVariable Long seatId) {
+        return ResponseEntity.ok(seatService.markSeatAsBooked(eventId, seatId));
+    }
+
+    @PutMapping("/{seatId}/release")
+    public ResponseEntity<SeatResponse> releaseSeats(@PathVariable Long eventId, @PathVariable Long seatId) {
+        return ResponseEntity.ok(seatService.releaseSeat(eventId, seatId));
     }
     
 }
