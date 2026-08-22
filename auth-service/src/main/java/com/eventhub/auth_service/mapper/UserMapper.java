@@ -2,6 +2,7 @@ package com.eventhub.auth_service.mapper;
 
 import org.springframework.stereotype.Component;
 
+import com.eventhub.auth_service.dto.LoginResponse;
 import com.eventhub.auth_service.dto.UserResponse;
 import com.eventhub.auth_service.entity.User;
 
@@ -15,5 +16,12 @@ public class UserMapper {
         userResponse.setRole(user.getRole());
         userResponse.setCreatedAt(user.getCreatedAt());
         return userResponse;
+    }
+
+    public LoginResponse toLoginResponse(UserResponse userResponse, String token){
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setUserResponse(userResponse);
+        loginResponse.setToken(token);
+        return loginResponse;
     }
 }
