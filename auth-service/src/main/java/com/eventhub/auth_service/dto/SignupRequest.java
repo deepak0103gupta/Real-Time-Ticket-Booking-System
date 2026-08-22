@@ -3,7 +3,8 @@ package com.eventhub.auth_service.dto;
 import lombok.Data;
 
 @Data
-public class LoginRequest {
+public class SignupRequest {
+    private String name;
     private String email;
     private String password;
 }
