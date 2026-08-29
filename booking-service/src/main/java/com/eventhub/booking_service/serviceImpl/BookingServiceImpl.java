@@ -3,13 +3,17 @@ package com.eventhub.booking_service.serviceImpl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.eventhub.booking_service.client.EventServiceClient;
 import com.eventhub.booking_service.dto.HoldRequest;
 import com.eventhub.booking_service.dto.HoldResponse;
+import com.eventhub.booking_service.dto.SeatDetailsResponse;
 import com.eventhub.booking_service.entity.Booking;
 import com.eventhub.booking_service.entity.BookingSeat;
 import com.eventhub.booking_service.entity.BookingStatus;
@@ -27,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class BookingServiceImpl implements BookingService {
     private final SeatHoldService seatHoldService;
     private final BookingRepository bookingRepository;
+    private final EventServiceClient eventServiceClient;
 
     @Value("${booking.hold.duration-seconds}")
     private long holdDurationSeconds;
@@ -34,22 +39,40 @@ public class BookingServiceImpl implements BookingService {
     // NOTE: price-per-seat is hardcoded here for now since Booking Service
     // hasn't called Event Service yet to fetch real seat prices. We'll wire
     // that REST call in next — for now this proves the locking logic works.
-    private static final BigDecimal PLACEHOLDER_PRICE = BigDecimal.valueOf(1000);
+    
 
     @Override
     @Transactional
     public HoldResponse holdSeats(HoldRequest request) {
-        List<Long> successfullyHeldSeatIds = new ArrayList<>();
 
+        // 1. Fetch real seat data from Event Service via Feign
+        List<SeatDetailsResponse> eventSeats = eventServiceClient.getSeatsForEvent(request.getEventId());
+        
+
+        Map<Long, SeatDetailsResponse> seatMap = eventSeats.stream()
+                .collect(Collectors.toMap(SeatDetailsResponse::getId, s -> s));
+
+        // 2. Validate every requested seat exists and is AVAILABLE, before touching Redis at all
+        for (Long seatId : request.getSeatIds()) {
+            SeatDetailsResponse seat = seatMap.get(seatId);
+            if (seat == null) {
+                throw new SeatUnavailableException(
+                        "Seat " + seatId + " does not exist for event " + request.getEventId());
+            }
+            if (!"AVAILABLE".equals(seat.getSeatStatus())) {
+                throw new SeatUnavailableException(
+                        "Seat " + seatId + " is already booked");
+            }
+        }
+
+        // 3. Now attempt the Redis holds — same rollback logic as before
+        List<Long> successfullyHeldSeatIds = new ArrayList<>();
         try {
             for (Long seatId : request.getSeatIds()) {
                 boolean held = seatHoldService.tryHoldSeat(
                         request.getEventId(), seatId, request.getUserId());
 
                 if (!held) {
-                    // Roll back every seat we already grabbed in this same request
-                    // before throwing — otherwise a failed 3-seat booking would leave
-                    // 2 seats stuck HELD in Redis for 5 minutes for nothing.
                     rollbackHolds(request.getEventId(), successfullyHeldSeatIds);
                     throw new SeatUnavailableException(
                             "Seat " + seatId + " is no longer available");
@@ -57,19 +80,23 @@ public class BookingServiceImpl implements BookingService {
                 successfullyHeldSeatIds.add(seatId);
             }
 
+            // 4. Build booking using REAL prices from Event Service, not a placeholder
+            BigDecimal totalAmount = request.getSeatIds().stream()
+                    .map(seatId -> seatMap.get(seatId).getPrice())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
             Booking booking = Booking.builder()
                     .userId(request.getUserId())
                     .eventId(request.getEventId())
                     .status(BookingStatus.HELD)
-                    .totalAmount(PLACEHOLDER_PRICE.multiply(
-                            BigDecimal.valueOf(request.getSeatIds().size())))
+                    .totalAmount(totalAmount)
                     .build();
 
             List<BookingSeat> bookingSeats = request.getSeatIds().stream()
                     .map(seatId -> BookingSeat.builder()
                             .booking(booking)
                             .seatId(seatId)
-                            .price(PLACEHOLDER_PRICE)
+                            .price(seatMap.get(seatId).getPrice())
                             .build())
                     .collect(Collectors.toList());
 
@@ -79,9 +106,8 @@ public class BookingServiceImpl implements BookingService {
             return toResponse(saved);
 
         } catch (SeatUnavailableException ex) {
-            throw ex; // let GlobalExceptionHandler turn this into a 409
+            throw ex;
         } catch (Exception ex) {
-            // Any unexpected failure after some holds were acquired — still roll back
             rollbackHolds(request.getEventId(), successfullyHeldSeatIds);
             throw ex;
         }

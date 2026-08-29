@@ -1,6 +1,7 @@
 package com.eventhub.event_service.entity;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -28,5 +29,6 @@ public class Seat {
     private float price;
     
     @Enumerated(EnumType.STRING)
+    @Column(name = "seat_status")
     private SeatStatus seatStatus;
 }

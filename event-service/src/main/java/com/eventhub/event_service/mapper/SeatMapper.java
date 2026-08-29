@@ -14,7 +14,7 @@ public class SeatMapper {
         seatResponse.setSeatNumber(seat.getSeatNumber());
         seatResponse.setSeatType(seat.getSeatType().name());
         seatResponse.setPrice(seat.getPrice());
-        seatResponse.setSeatStatus(seat.getSeatStatus());
+        seatResponse.setSeatStatus(seat.getSeatStatus().name());
         return seatResponse;
     }
 }

@@ -11,5 +11,5 @@ public class SeatResponse {
     private int seatNumber;
     private String seatType;
     private float price;
-    private SeatStatus seatStatus;
+    private String seatStatus;
 }
