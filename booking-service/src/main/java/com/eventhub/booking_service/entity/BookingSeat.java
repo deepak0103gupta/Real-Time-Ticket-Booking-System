@@ -8,10 +8,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Data
 @Builder
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class BookingSeat {
     @GeneratedValue
     @Id

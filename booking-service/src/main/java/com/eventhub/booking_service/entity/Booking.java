@@ -15,10 +15,14 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Data
 @Builder
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Booking {
     @GeneratedValue
     @Id
